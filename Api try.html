@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BHARATH API Jokes</title>
+    <style>
+        /* Reset and base */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            font-weight: 700;
+            font-size: 2.8rem;
+            color: #fff;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        button#refresh-btn {
+            background-color: #ff7f50;
+            border: none;
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(255, 127, 80, 0.5);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            user-select: none;
+        }
+
+        button#refresh-btn:hover {
+            background-color: #ff6333;
+            transform: scale(1.05);
+        }
+
+        button#refresh-btn:active {
+            transform: scale(0.95);
+        }
+
+        .table-container {
+            width: 100%;
+            max-width: 900px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse; /* Important for borders */
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        thead tr {
+            background: #ff7f50;
+            color: white;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        thead th {
+            padding: 15px 20px;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+            border: 1px solid #ff7f50; /* Border for headers */
+        }
+
+        tbody tr {
+            transition: background-color 0.25s ease;
+            cursor: default;
+        }
+
+        tbody tr:hover {
+            background-color: #ffeed9;
+        }
+
+        tbody td {
+            padding: 15px 20px;
+            border: 1px solid #ff7f50; /* Border for cells */
+            font-size: 1rem;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: 1px solid #ff7f50;
+        }
+
+        /* Loading indicator */
+        .loading {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #ff7f50;
+            font-weight: 600;
+            padding: 30px 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            button#refresh-btn {
+                width: 100%;
+                padding: 15px 0;
+                font-size: 1.1rem;
+            }
+
+            tbody td {
+                padding: 12px 10px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>BHARATH API Jokes</h1>
+    <button id="refresh-btn" aria-label="Refresh jokes">🔄 Refresh Jokes</button>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Setup</th>
+                    <th>Punchline</th>
+                    <th>Type</th>
+                </tr>
+            </thead>
+            <tbody class="joke-table-body">
+                <tr class="loading">
+                    <td colspan="4">Loading jokes...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const tableBody = document.querySelector('.joke-table-body');
+        const refreshBtn = document.getElementById('refresh-btn');
+
+        async function fetchData() {
+            try {
+                const response = await fetch('https://official-joke-api.appspot.com/jokes/ten');
+                if (!response.ok) throw new Error('Network response not ok');
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                return [];
+            }
+        }
+
+        async function renderData() {
+            tableBody.innerHTML = `<tr class="loading"><td colspan="4">Loading jokes...</td></tr>`;
+            const data = await fetchData();
+
+            if (!data.length) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align:center; color:#ff4d4d; font-weight:700;">
+                            Failed to load jokes. Please try again.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tableBody.innerHTML = ''; // Clear loading row
+
+            data.forEach(joke => {
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+                    <td>${joke.id}</td>
+                    <td>${joke.setup}</td>
+                    <td>${joke.punchline}</td>
+                    <td>${joke.type}</td>
+                `;
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Initial load
+        renderData();
+
+        // Refresh button handler
+        refreshBtn.addEventListener('click', () => {
+            renderData();
+        });
+    </script>
+
+</body>
+
+</html>
